@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e;
+
+VERSION=1.0.0-dev
+PROJECT_DIRECTORY=~/opendata_script
+mkdir -p $PROJECT_DIRECTORY
+curl -L "https://github.com/cuprit-gbr/cpak/releases/download/$VERSION/cpak" -o $PROJECT_DIRECTORY/cpak
+chmod +x $PROJECT_DIRECTORY/cpak
+ln -s $PROJECT_DIRECTORY/cpak /usr/local/bin/cpak
