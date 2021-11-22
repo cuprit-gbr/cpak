@@ -15,3 +15,15 @@ Commands:
   show-version    Show the current script version
   upload-package  This command will upload a package to cKAN.
 ```
+### Download binary
+
+```
+VERSION=1.0.0-dev
+PROJECT_DIRECTORY=~/opendata
+mkdir -p $PROJECT_DIRECTORY
+curl -L "https://github.com/cuprit-gbr/cpak/releases/download/$VERSION/cpak" -o $PROJECT_DIRECTORY/cpak
+chmod +x $PROJECT_DIRECTORY/cpak
+
+# check if it works
+$PROJECT_DIRECTORY/cpak
+```

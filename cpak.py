@@ -3,7 +3,9 @@
 import click
 from local_lib.utils import create_settings, read_metatadata_from_pdf, \
     confirm_metadata, create_package_with_metadata_values, \
-    read_settings_file_as_dict, upload_resources_to_package, check_if_settings_exists
+    read_settings_file_as_dict, upload_resources_to_package, \
+    check_if_settings_exists, get_correct_settings_path
+
 from local_lib.custom_validator import URL
 from local_lib.decorators import check_if_project_folder_and_metadata_exist
 import os
@@ -41,8 +43,11 @@ def set_settings(api_key, url, owner_org, max_filesize, overwrite):
 @cli.command()
 def show_settings():
     """This command shows content of current 'settings.ini'."""
+    settings_path = get_correct_settings_path()
+    click.echo(settings_path)
+    # TODO: refactor needed
     check_if_settings_exists()
-    with open('settings.ini', 'r') as f:
+    with open(settings_path, 'r') as f:
         print(f.read())
     pass
 
@@ -62,7 +67,8 @@ def upload_package(folder_path):
 
     check_if_settings_exists()
     metadata_file_path = os.path.join(folder_path, 'metadata.pdf')
-    settings_dict = read_settings_file_as_dict('settings.ini')
+    settings_path = get_correct_settings_path()
+    settings_dict = read_settings_file_as_dict(settings_path)
 
     pdf_form_data = read_metatadata_from_pdf(metadata_file_path)
     confirm_metadata(pdf_form_data)

@@ -7,18 +7,32 @@ from slugify import slugify
 import glob
 import pprint
 from collections import Counter
+import pathlib
 
 try:
     from configparser import ConfigParser
 except ImportError:
     from ConfigParser import ConfigParser  # ver. < 3.0
 
+def get_correct_settings_path():
+    folder = pathlib.PurePath(__file__)
+    parent_folder = folder.parent.parent.name
+    settings_file = 'settings.ini'
+    if parent_folder == "cpak":
+        settings_path = os.path.abspath(
+            os.path.join(os.path.dirname( __file__ ), '..', '..', settings_file)
+        )
+    else:
+        settings_path = os.path.abspath(
+            os.path.join(os.path.dirname( __file__ ), '..', settings_file)
+        )
+    return settings_path
 
 def create_settings(api_key, url, owner_org, max_filesize, overwrite):
+    settings_path = get_correct_settings_path()
     # instantiate
-    ini_name = 'settings.ini'
     config = ConfigParser()
-    file_exists = path.isfile(ini_name)
+    file_exists = path.isfile(settings_path)
     if file_exists and overwrite is False:
         print("settings file already exists. please delete it first or set --overwrite=True")
         exit()
@@ -28,7 +42,7 @@ def create_settings(api_key, url, owner_org, max_filesize, overwrite):
     config.set('defaults', 'api_key', api_key)
     config.set('defaults', 'max_filesize', max_filesize)
     config.set('defaults', 'owner_org', owner_org)
-    with open(ini_name, 'w') as configfile:
+    with open(settings_path, 'w') as configfile:
         config.write(configfile)
     click.echo("settings.ini created")
 
@@ -232,10 +246,11 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name):
 
 
 def check_if_settings_exists():
-    settings_file = 'settings.ini'
-    file_exists = os.path.isfile(settings_file)
+    settings_path = get_correct_settings_path()
+    file_exists = os.path.isfile(settings_path)
+
     if file_exists:
         return True
     else:
-        click.echo("settings_does_not_exist")
+        click.echo("settings.ini does not exist")
         quit()

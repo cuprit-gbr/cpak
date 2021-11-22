@@ -14,7 +14,12 @@ def capitalise_input(f):
 def check_if_settings_exists(f):
     settings_file = 'settings.ini'
     file_exists = os.path.isfile(settings_file)
-    print(f.__name__)
+
+    __location__ = os.path.realpath(
+        os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    settings_path = os.path.join(__location__, 'settings.ini')
+    print(__location__)
+
     if file_exists:
         @click.pass_context
         def run(ctx, *args, **kwargs):
@@ -22,7 +27,7 @@ def check_if_settings_exists(f):
         return update_wrapper(run, f)
 
     else:
-        click.echo("settings_does_not_exist")
+        click.echo("settings.ini does not exist")
 
 def check_if_project_folder_and_metadata_exist(f):
     @click.pass_context
