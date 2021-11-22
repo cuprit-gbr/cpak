@@ -15,17 +15,21 @@ except ImportError:
     from ConfigParser import ConfigParser  # ver. < 3.0
 
 def get_correct_settings_path():
-    folder = pathlib.PurePath(__file__)
+
+    # check if user calles script from bin filder
+    folder = pathlib.Path(__file__).resolve()
     parent_folder = folder.parent.parent.name
+
     settings_file = 'settings.ini'
     if parent_folder == "cpak":
         settings_path = os.path.abspath(
-            os.path.join(os.path.dirname( __file__ ), '..', '..', settings_file)
+            os.path.join(folder, '..', '..', '..', settings_file)
         )
     else:
         settings_path = os.path.abspath(
-            os.path.join(os.path.dirname( __file__ ), '..', settings_file)
+            os.path.join(folder, '..', '..', settings_file)
         )
+
     return settings_path
 
 def create_settings(api_key, url, owner_org, max_filesize, overwrite):
