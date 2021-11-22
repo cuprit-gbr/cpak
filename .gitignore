@@ -143,3 +143,5 @@ e/*
 data
 data/*
 .idea
+app/
+app.pyz
