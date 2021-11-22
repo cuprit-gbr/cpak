@@ -2,6 +2,7 @@
 
 ```
 Usage: cpak.py [OPTIONS] COMMAND [ARGS]...
+Usage from binary: cpak [OPTIONS] COMMAND [ARGS]...
 
   This script creates a cKAN dataset based on a metadata PDF and uploads all
   valid files in a folder and subfolders
