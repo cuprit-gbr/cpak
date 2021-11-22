@@ -1,0 +1,5 @@
+ckanapi==4.6
+click==8.0.3
+PyPDF2==1.26.0
+python-slugify==5.0.2
+requests==2.26.0
