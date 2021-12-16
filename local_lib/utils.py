@@ -1,13 +1,18 @@
+from datetime import datetime
 from os import path
 import click
 from PyPDF2 import PdfFileReader
 import os
 import ckanapi
 from slugify import slugify
-import glob
 import pprint
-from collections import Counter
 import pathlib
+import requests
+import json
+from local_lib.helpers import path_to_dict, \
+    write_logfile, \
+    find_files_in_directory, \
+    iter_files
 
 try:
     from configparser import ConfigParser
@@ -16,7 +21,7 @@ except ImportError:
 
 def get_correct_settings_path():
 
-    # check if user calles script from bin filder
+    # check if user called script from bin folder
     folder = pathlib.Path(__file__).resolve()
     parent_folder = folder.parent.parent.name
 
@@ -32,7 +37,8 @@ def get_correct_settings_path():
 
     return settings_path
 
-def create_settings(api_key, url, owner_org, max_filesize, overwrite):
+
+def create_settings(api_key, url, owner_org, max_filesize, username, overwrite):
     settings_path = get_correct_settings_path()
     # instantiate
     config = ConfigParser()
@@ -44,6 +50,7 @@ def create_settings(api_key, url, owner_org, max_filesize, overwrite):
     config.add_section('defaults')
     config.set('defaults', 'url', url)
     config.set('defaults', 'api_key', api_key)
+    config.set('defaults', 'username', username)
     config.set('defaults', 'max_filesize', max_filesize)
     config.set('defaults', 'owner_org', owner_org)
     with open(settings_path, 'w') as configfile:
@@ -76,7 +83,7 @@ def confirm_metadata(pdf_form_data):
         click.echo("ERROR: The title is empty this package cannot be created!")
         quit()
 
-    click.confirm('Is the data correct? Do you want to continue?', abort=True)
+    click.confirm('\nIs the data correct?', abort=True)
 
 
 def check_if_package_already_exists(title, settings_dict, number=False):
@@ -91,8 +98,7 @@ def check_if_package_already_exists(title, settings_dict, number=False):
 
     try:
         ckan.action.package_show(id=is_unique_title)
-        click.echo(f"the title '{is_unique_title}' is already in use, "
-                   f"trying again with a higher number appended!")
+        click.echo(f" - The title '{is_unique_title}' is already in use, retrying.")
         number = number + 1
         return check_if_package_already_exists(title, settings_dict, number)
     except Exception as e:
@@ -121,12 +127,11 @@ def get_lisence_key(lisence_name):
 
 
 def create_package_with_metadata_values(pdf_form_data, settings_dict):
-    # create a simple version of the raw pdf objects
+    # create a simplified version of the raw pdf objects
     pdf_form_data_simplified = {k: v['/V'] for (k, v) in pdf_form_data.items()}
     unique_title = check_if_package_already_exists(slugify(pdf_form_data_simplified['title']), settings_dict)
     click.echo(f"{unique_title} is unique and will be used")
 
-    # api obj
     ckan = ckanapi.RemoteCKAN(settings_dict['url'],
                               apikey=settings_dict['api_key'],
                               user_agent='ckan_admin_uploader')
@@ -135,7 +140,7 @@ def create_package_with_metadata_values(pdf_form_data, settings_dict):
     resource_dict = {
         "name": unique_title,
         "maintainer": "he",
-        "private": False,
+        "private": True,
         "owner_org": settings_dict['owner_org']
     }
 
@@ -158,95 +163,76 @@ def read_settings_file_as_dict(filename):
     return settings_dict
 
 
-def find_files_in_directory(folder_path):
-    search_path = os.path.join(folder_path, '**', '*')
-    file_list = glob.iglob(search_path, recursive=True)
-    file_list = [file for file in file_list if os.path.isfile(file)]
-    return file_list
-
-
-def check_filenames_for_duplicates(file_list):
-    only_filenames = [os.path.basename(file) for file in file_list]
-    count_duplicates = Counter(only_filenames)
-    duplicates_filenames = list([item for item in count_duplicates if count_duplicates[item] > 1])
-    return duplicates_filenames
-
-
-def iter_files(file_list, settings_dict):
-    ignore_extensions = ['.exe']
-
-    separated_filelist = {
-        "files_to_upload": {},
-        "files_exceed_size": {},
-        "files_with_duplicate_names": [],
-        "files_missing_or_wrong_extension": {}
-    }
-
-    for i, file in enumerate(file_list):
-        file_name = os.path.basename(file)
-        full_file_path, file_extension = os.path.splitext(file)
-        filesize = os.path.getsize(file) / 1000000
-        settings_max_filesize = int(settings_dict['max_filesize'])
-        blocked_chars = 'ß?!#äüöÄÜÖß '
-        if file_name == 'metadata.pdf':
-            continue
-
-        if not file_extension \
-                or file_extension in ignore_extensions \
-                or any(i in file_name for i in blocked_chars) \
-                and filesize <= settings_max_filesize:
-            target = 'files_missing_or_wrong_extension'
-        elif filesize > settings_max_filesize:
-            target = 'files_exceed_size'
-        else:
-            target = 'files_to_upload'
-        separated_filelist[target][i] = {'path': file,
-                                         'filesize': filesize,
-                                         'filename': file_name}
-    separated_filelist['files_with_duplicate_names'] = check_filenames_for_duplicates(file_list)
-    return separated_filelist
-
-
-def upload_resources_to_package(folder_path, settings_dict, new_package_name):
+def upload_resources_to_package(folder_path, settings_dict, new_package_name,allowed_extensions):
     # api obj
     ckan = ckanapi.RemoteCKAN(settings_dict['url'],
                               apikey=settings_dict['api_key'],
                               user_agent='ckan_admin_uploader')
 
-    all_files = find_files_in_directory(folder_path)
-    separated_filelist = iter_files(all_files, settings_dict)
+    #  create logfile
+    log_file_name = os.path.join(folder_path, 'package.json')
+    open(log_file_name, "w")
 
+    # create list of files
+    all_files = find_files_in_directory(folder_path)
+    separated_filelist = iter_files(all_files, settings_dict, allowed_extensions)
+
+    #  start logfile content
+    log_file_name = os.path.join(folder_path, 'package.json')
+    open(log_file_name, "w")
+
+    log_content = {}
+    log_content['uploaded_by'] = settings_dict['username']
+    log_content['uploaded_date'] = str(datetime.now())
+    log_content['original_dataset'] = path_to_dict(folder_path)
+
+    # fill dataset overview dict
     if separated_filelist['files_exceed_size']:
         click.echo("\n--- \nNO UPLOAD: Following files exceed the allowed settings limit:\n")
         pprint.pprint(separated_filelist['files_exceed_size'])
+        log_content['files_exceed_size'] = separated_filelist['files_exceed_size']
+
     if separated_filelist['files_missing_or_wrong_extension']:
-        click.echo("\n--- \nNO UPLOAD: Following filenames use special chars are, "
-                   "allowed by extension or have no extension:\n")
+        click.echo("\n--- \nNO UPLOAD: Following filenames are "
+                   "not allowed by extension or have no extension:\n")
         pprint.pprint(separated_filelist['files_missing_or_wrong_extension'])
+        log_content['files_missing_or_wrong_extension'] = separated_filelist['files_missing_or_wrong_extension']
+
     if separated_filelist['files_with_duplicate_names']:
         click.echo("\n--- \nWARNING: Following files have duplicate names but might be uploaded if"
-                   "extension and filesize are fine:\n")
+                   " extension and filesize are fine:\n")
         pprint.pprint(separated_filelist['files_with_duplicate_names'])
+        log_content['files_with_duplicate_names'] = separated_filelist['files_with_duplicate_names']
+
     if separated_filelist['files_to_upload']:
         click.echo("\n--- \nUPLOAD: Following files look fine and will be uploaded:\n")
         pprint.pprint(separated_filelist['files_to_upload'])
+        log_content['files_to_upload'] = separated_filelist['files_to_upload']
 
+    # write logfile
+    write_logfile(log_content, log_file_name)
+    click.echo("\n---\nCreated logfile from your file structure\n---")
+
+    # uploading of files
     click.confirm('Do you like to upload above files?', abort=True)
 
-    click.echo("--- \nThe final payload")
+    click.echo("--- \nUploading ...")
     for file in separated_filelist['files_to_upload'].values():
-        click.echo(f" uploading: {file['path']}")
-        # upload resource
+        try:
+            ckan.action.resource_create(
+                package_id=new_package_name,
+                url='n.N.',  # ignored but required by CKAN<2.6
+                name=slugify(file['filename'], lowercase=False),
+                description='',
+                upload=open(file['path'], 'rb'))
+            click.echo(f" uploaded: {file['path']}")
 
-        ckan.action.resource_create(
-            package_id=new_package_name,
-            url='n.N.',  # ignored but required by CKAN<2.6
-            name=file['filename'],
-            description='',
-            upload=open(file['path'], 'rb'))
+        except Exception as e:
+            click.echo(f"An exception occurred: ${e}")
+            pass
 
     click.echo(f"\n=== \nJob done ...")
-    click.echo(f"You can visit the dataset {settings_dict['url']}dataset/{new_package_name}")
+    click.echo(f"You can view the dataset {settings_dict['url']}dataset/{new_package_name}")
 
 
 def check_if_settings_exists():
@@ -258,3 +244,27 @@ def check_if_settings_exists():
     else:
         click.echo("settings.ini does not exist")
         quit()
+
+
+def delete_package(slug, settings_dict):
+    ckan = ckanapi.RemoteCKAN(settings_dict['url'],
+                              apikey=settings_dict['api_key'],
+                              user_agent='ckan_admin_uploader')
+    for res in slug:
+        try:
+            print(res)
+            ckan.action.dataset_purge(id=res)
+        except Exception as e:
+            print(e)
+            pass
+
+
+def load_allowed_extensions(settings_dict):
+    url = settings_dict['url']+"allowed_extensions.json"
+
+    try:
+        response = json.loads(requests.get(url).text)
+        return response['allowed_extensions']
+    except Exception as e:
+        print(e)
+        pass

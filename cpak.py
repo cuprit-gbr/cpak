@@ -4,17 +4,22 @@ import click
 from local_lib.utils import create_settings, read_metatadata_from_pdf, \
     confirm_metadata, create_package_with_metadata_values, \
     read_settings_file_as_dict, upload_resources_to_package, \
-    check_if_settings_exists, get_correct_settings_path
+    check_if_settings_exists, get_correct_settings_path, delete_package, load_allowed_extensions
 
 from local_lib.custom_validator import URL
+
 from local_lib.decorators import check_if_project_folder_and_metadata_exist
 import os
 from version import version
 
+
 @click.group()
 def cli():
     """This script creates a cKAN dataset based on a metadata PDF and uploads all valid files
-    in a folder and subfolders"""
+    in a folder and subfolders.
+    Note run [command]--help on commands to get more information.
+    Example: cpak set-settings --help
+    """
     pass
 
 @cli.command()
@@ -30,15 +35,19 @@ def cli():
               required=False,
               default=20,
               type=str)
+@click.option('--username',
+              help='Your Username, will be written to package.json',
+              required=True,
+              type=str)
 @click.option('--overwrite',
               help='overwrite settings?',
               required=False,
               default=False,
               type=bool)
-def set_settings(api_key, url, owner_org, max_filesize, overwrite):
+def set_settings(api_key, url, owner_org, max_filesize, username, overwrite):
     """This command will create a settings file called 'settings.ini'.
     The settings file contains default settings like upload limits next to your api key."""
-    create_settings(api_key, url, owner_org, max_filesize, overwrite)
+    create_settings(api_key, url, owner_org, max_filesize, username, overwrite)
 
 @cli.command()
 def show_settings():
@@ -52,11 +61,31 @@ def show_settings():
     pass
 
 @cli.command()
-
 def show_version():
     """Show the current script version"""
     click.echo(os.path.basename(__file__))
     click.echo(version)
+
+@cli.command()
+@click.option('--slug','-s',  help='Slugs of datasets each as -s', required=True, multiple=True)
+def delete_datasets(slug):
+    """Batch delete datasets"""
+    click.echo(f"Followin datasets will be deleted {slug}")
+    click.confirm("Are you sure?")
+
+    settings_path = get_correct_settings_path()
+    settings_dict = read_settings_file_as_dict(settings_path)
+    delete_package(slug, settings_dict['defaults'])
+
+@cli.command()
+def show_allowed_extension():
+    """Show allowed extensions to upload"""
+
+    settings_path = get_correct_settings_path()
+    settings_dict = read_settings_file_as_dict(settings_path)
+    allowed_extension = load_allowed_extensions(settings_dict['defaults'])
+    print(allowed_extension)
+
 
 @cli.command()
 @click.option('--folder_path',  help='your iDAI.open_data API Key', required=True)
@@ -74,8 +103,12 @@ def upload_package(folder_path):
     confirm_metadata(pdf_form_data)
     new_package_name = create_package_with_metadata_values(pdf_form_data, settings_dict['defaults']) # before check if package already exists
 
-    click.confirm(f"\n--- \nYour Package {new_package_name} has been created continue read and upload files?", abort=True)
-    upload_resources_to_package(folder_path, settings_dict['defaults'], new_package_name) # iter files, validate extension and filesize
+    click.echo(f"\n--- \nYour package {new_package_name} has been created?\n--- ")
+    allowed_extensions = load_allowed_extensions(settings_dict['defaults'])
+    upload_resources_to_package(folder_path,
+                                settings_dict['defaults'],
+                                new_package_name,
+                                allowed_extensions) # iter files, validate extension and filesize
 
 
 
