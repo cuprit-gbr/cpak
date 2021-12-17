@@ -17,6 +17,14 @@ Commands:
   show-pending-datasets   Show all pending datasets (private)
   show-settings           This command shows content of current...
   show-version            Show the current script version
-  upload-package          This command will upload a package to cKAN.
+  upload-package          This command will upload a dataset to cKAN.
 
+```
+
+# Install binary (Linux only)
+```
+curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
+
+# check if it works
+cpak
 ```
