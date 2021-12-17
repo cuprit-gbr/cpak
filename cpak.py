@@ -4,7 +4,8 @@ import click
 from local_lib.utils import create_settings, read_metatadata_from_pdf, \
     confirm_metadata, create_package_with_metadata_values, \
     read_settings_file_as_dict, upload_resources_to_package, \
-    check_if_settings_exists, get_correct_settings_path, delete_package, load_allowed_extensions
+    check_if_settings_exists, get_correct_settings_path, delete_package, load_allowed_extensions, \
+    get_pending_datasets
 
 from local_lib.custom_validator import URL
 
@@ -85,6 +86,13 @@ def show_allowed_extension():
     settings_dict = read_settings_file_as_dict(settings_path)
     allowed_extension = load_allowed_extensions(settings_dict['defaults'])
     print(allowed_extension)
+
+@cli.command()
+def show_pending_datasets():
+    """Show all pending datasets (private)"""
+    settings_path = get_correct_settings_path()
+    settings_dict = read_settings_file_as_dict(settings_path)
+    get_pending_datasets(settings_dict['defaults'])
 
 
 @cli.command()

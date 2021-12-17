@@ -218,6 +218,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name,all
 
     click.echo("--- \nUploading ...")
     for file in separated_filelist['files_to_upload'].values():
+
         try:
             ckan.action.resource_create(
                 package_id=new_package_name,
@@ -228,7 +229,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name,all
             click.echo(f" uploaded: {file['path']}")
 
         except Exception as e:
-            click.echo(f"An exception occurred: ${e}")
+            click.echo(f"{file['filename']} failed : {e}")
             pass
 
     click.echo(f"\n=== \nJob done ...")
@@ -265,6 +266,22 @@ def load_allowed_extensions(settings_dict):
     try:
         response = json.loads(requests.get(url).text)
         return response['allowed_extensions']
+    except Exception as e:
+        print(e)
+        pass
+
+def get_pending_datasets(settings_dict):
+    ckan = ckanapi.RemoteCKAN(settings_dict['url'],
+                              apikey=settings_dict['api_key'],
+                              user_agent='ckan_admin_uploader')
+    try:
+        all_resources = ckan.action.package_search(
+            include_private=True
+        )
+        click.echo('Following datasets are set to private')
+        for resource in all_resources["results"]:
+            if resource['private'] == True:
+                click.echo(f" {settings_dict['url']}dataset/{resource['name']}")
     except Exception as e:
         print(e)
         pass
