@@ -1,4 +1,4 @@
-#cPAK
+# cPAK
 
 This python script (and binary) can be used to manage datasets with cKAN.
 It expects python3 and is tested on *nix systems.
