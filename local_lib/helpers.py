@@ -4,7 +4,10 @@ from slugify import slugify
 import mimetypes
 import glob
 from collections import Counter
-
+import wget
+import zipfile
+import tarfile
+import click
 
 def generate_secure_name(file_path):
     file, ext = os.path.splitext(file_path)
@@ -80,3 +83,21 @@ def iter_files(file_list, server_settings):
                                          }
     separated_filelist['files_with_duplicate_names'] = check_filenames_for_duplicates(file_list)
     return separated_filelist
+
+def download_archive(url, out):
+    current_path = os.getcwd()
+    out_path = current_path+"/"+out
+
+    click.echo(f"Fetching: {url}")
+    d_file = wget.download(url)
+
+    if zipfile.is_zipfile(d_file):
+        click.echo(f"Extracting zip: {d_file} to out_path")
+        with zipfile.ZipFile(d_file, 'r') as zip_ref:
+            zip_ref.extractall(out_path)
+
+    if tarfile.is_tarfile(d_file):
+        click.echo(f"Extracting tar: {d_file} to out_path")
+        tar_archive = tarfile.open(d_file)
+        tar_archive.extractall(out_path)
+        tar_archive.close()

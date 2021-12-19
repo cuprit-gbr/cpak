@@ -5,12 +5,11 @@ from local_lib.utils import *
 
 from local_lib.custom_validator import URL
 
-from local_lib.decorators import check_if_project_folder_and_metadata_exist, check_if_settings_exists
+from local_lib.decorators import check_if_project_folder_and_metadata_exist, \
+    check_if_settings_exists
 import os
+from local_lib.helpers import download_archive
 from version import version
-import wget
-import zipfile
-import tarfile
 
 # global settings
 try:
@@ -86,30 +85,16 @@ def delete_datasets(slug):
     """Batch delete datasets"""
     click.echo(f"Following datasets will be deleted {slug}")
     click.confirm("Are you sure?")
-    delete_package(slug, settings_dict['defaults'])
+    delete_package(slug, settings_dict)
 
 
 @cli.command()
 @click.option('--url', '-u', help='Resource URL (only zip or tar.gz) i.e. "https://example.com/data.zip"', required=True)
 @click.option('--out', '-o', help='Local directory to exctract file to i.e. extract', required=True)
 def fetch__extract_archive(url, out):
-    """Fetch zip or tar resource and unpack it"""
-    current_path = os.getcwd()
-    out_path = current_path+"/"+out
-
-    click.echo(f"Fetching: {url}")
-    d_file = wget.download(url)
-
-    if zipfile.is_zipfile(d_file):
-        click.echo(f"Extracting zip: {d_file} to out_path")
-        with zipfile.ZipFile(d_file, 'r') as zip_ref:
-            zip_ref.extractall(out_path)
-
-    if tarfile.is_tarfile(d_file):
-        click.echo(f"Extracting tar: {d_file} to out_path")
-        tar_archive = tarfile.open(d_file)
-        tar_archive.extractall(out_path)
-        tar_archive.close()
+    """Fetch zip or tar resource and unpack it. You can then use the extracted dir as input for
+     upload-package command """
+    download_archive(url, out)
 
 
 @cli.command()
