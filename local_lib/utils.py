@@ -7,8 +7,6 @@ import ckanapi
 from slugify import slugify
 import pprint
 import pathlib
-import requests
-import json
 from local_lib.helpers import path_to_dict, \
     write_logfile, \
     find_files_in_directory, \
