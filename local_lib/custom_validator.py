@@ -1,6 +1,8 @@
 import click
 import requests
 
+
+""" Only for demonstration how to do it"""
 class URL(click.ParamType):
     name = "url"
 

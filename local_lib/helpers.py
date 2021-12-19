@@ -9,7 +9,8 @@ from collections import Counter
 def generate_secure_name(file_path):
     file, ext = os.path.splitext(file_path)
     secure_name_no_extension = slugify(file, lowercase=False)
-    return secure_name_no_extension+ext
+    return secure_name_no_extension + ext
+
 
 def path_to_dict(path):
     file_path = os.path.basename(path)
@@ -20,16 +21,18 @@ def path_to_dict(path):
     }
     if os.path.isdir(path):
         d['type'] = "directory"
-        d['children'] = [path_to_dict(os.path.join(path,x)) for x in os.listdir(path)]
+        d['children'] = [path_to_dict(os.path.join(path, x)) for x in os.listdir(path)]
     else:
         d['type'] = "file"
         d['mime_type']: mimetypes.MimeTypes().guess_type(file_path)[0]
     return d
 
+
 def write_logfile(log_content, log_file_name):
     log_content = json.dumps(log_content, indent=4)
     with open(log_file_name, "w", encoding='utf-8') as log:
         log.write(log_content)
+
 
 def find_files_in_directory(folder_path):
     search_path = os.path.join(folder_path, '**', '*')
@@ -45,7 +48,7 @@ def check_filenames_for_duplicates(file_list):
     return duplicates_filenames
 
 
-def iter_files(file_list, settings_dict, allowed_extensions):
+def iter_files(file_list, server_settings):
     separated_filelist = {
         "files_to_upload": {},
         "files_exceed_size": {},
@@ -58,12 +61,12 @@ def iter_files(file_list, settings_dict, allowed_extensions):
         full_file_path, file_extension = os.path.splitext(file)
         file_extension = file_extension.strip(".")
         filesize = os.path.getsize(file) / 1000000
-        settings_max_filesize = int(settings_dict['max_filesize'])
+        settings_max_filesize = float(server_settings["allowed_max_upload_size"])
         if file_name == 'metadata.pdf':
             continue
 
         if not file_extension \
-                or file_extension not in allowed_extensions \
+                or file_extension not in server_settings["allowed_extensions"] \
                 and filesize <= settings_max_filesize:
             target = 'files_missing_or_wrong_extension'
         elif filesize > settings_max_filesize:

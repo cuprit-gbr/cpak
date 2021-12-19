@@ -13,14 +13,16 @@ from local_lib.helpers import path_to_dict, \
     write_logfile, \
     find_files_in_directory, \
     iter_files
+from tabulate import tabulate
+
 
 try:
     from configparser import ConfigParser
 except ImportError:
     from ConfigParser import ConfigParser  # ver. < 3.0
 
-def get_correct_settings_path():
 
+def get_correct_settings_path():
     # check if user called script from bin folder
     folder = pathlib.Path(__file__).resolve()
     parent_folder = folder.parent.parent.name
@@ -69,15 +71,18 @@ def read_metatadata_from_pdf(metadata_file_path):
 def confirm_metadata(pdf_form_data):
     click.echo("The used metadata is:")
     title = "None"
+    metadata = []
     for field in pdf_form_data.values():
         if field['/T'] == "title" and '/V' not in field:
             title = False
         if '/V' not in field:
-            click.echo(f" {field['/T']} = ")
+            metadata.append([field['/T'], "-", "NOT OK"])
             if field['/T'] == "title":
                 title = False
         else:
-            click.echo(f" {field['/T']} = {field['/V']}")
+            metadata.append([field['/T'], field['/V'], "OK"])
+
+    print(tabulate(metadata))
 
     if not title:
         click.echo("ERROR: The title is empty this package cannot be created!")
@@ -91,9 +96,8 @@ def check_if_package_already_exists(title, settings_dict, number=False):
                               apikey=settings_dict['api_key'],
                               user_agent='ckan_admin_uploader')
 
-    if not number:
-        is_unique_title = f"{title}"
-    else:
+    is_unique_title = f"{title}"
+    if number:
         is_unique_title = f"{title}_{number}"
 
     try:
@@ -101,7 +105,7 @@ def check_if_package_already_exists(title, settings_dict, number=False):
         click.echo(f" - The title '{is_unique_title}' is already in use, retrying.")
         number = number + 1
         return check_if_package_already_exists(title, settings_dict, number)
-    except Exception as e:
+    except:
         return is_unique_title
 
 
@@ -128,7 +132,7 @@ def get_lisence_key(lisence_name):
 
 def create_package_with_metadata_values(pdf_form_data, settings_dict):
     # create a simplified version of the raw pdf objects
-    pdf_form_data_simplified = {k: v['/V'] for (k, v) in pdf_form_data.items()}
+    pdf_form_data_simplified = {k: v.get('/V', "") for (k, v) in pdf_form_data.items()}
     unique_title = check_if_package_already_exists(slugify(pdf_form_data_simplified['title']), settings_dict)
     click.echo(f"{unique_title} is unique and will be used")
 
@@ -154,6 +158,7 @@ def create_package_with_metadata_values(pdf_form_data, settings_dict):
         return unique_title
     except Exception as e:
         print(e)
+        exit()
 
 
 def read_settings_file_as_dict(filename):
@@ -163,7 +168,7 @@ def read_settings_file_as_dict(filename):
     return settings_dict
 
 
-def upload_resources_to_package(folder_path, settings_dict, new_package_name,allowed_extensions):
+def upload_resources_to_package(folder_path, settings_dict, new_package_name, server_settings):
     # api obj
     ckan = ckanapi.RemoteCKAN(settings_dict['url'],
                               apikey=settings_dict['api_key'],
@@ -175,7 +180,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name,all
 
     # create list of files
     all_files = find_files_in_directory(folder_path)
-    separated_filelist = iter_files(all_files, settings_dict, allowed_extensions)
+    separated_filelist = iter_files(all_files, server_settings)
 
     #  start logfile content
     log_file_name = os.path.join(folder_path, 'package.json')
@@ -216,10 +221,11 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name,all
     # uploading of files
     click.confirm('Do you like to upload above files?', abort=True)
 
+    failed_uploads = []
     click.echo("--- \nUploading ...")
     for file in separated_filelist['files_to_upload'].values():
-
         try:
+            click.echo(f" ... uploading: {file['path']}")
             ckan.action.resource_create(
                 package_id=new_package_name,
                 url='n.N.',  # ignored but required by CKAN<2.6
@@ -230,21 +236,16 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name,all
 
         except Exception as e:
             click.echo(f"{file['filename']} failed : {e}")
+            failed_uploads.append(file['filename'])
             pass
+
+    if len(failed_uploads) > 0:
+        click.echo("Those files failed to upload. Please try by use of the GUI")
+        for failed in failed_uploads:
+            click.echo(failed)
 
     click.echo(f"\n=== \nJob done ...")
     click.echo(f"You can view the dataset {settings_dict['url']}dataset/{new_package_name}")
-
-
-def check_if_settings_exists():
-    settings_path = get_correct_settings_path()
-    file_exists = os.path.isfile(settings_path)
-
-    if file_exists:
-        return True
-    else:
-        click.echo("settings.ini does not exist")
-        quit()
 
 
 def delete_package(slug, settings_dict):
@@ -260,15 +261,21 @@ def delete_package(slug, settings_dict):
             pass
 
 
-def load_allowed_extensions(settings_dict):
-    url = settings_dict['url']+"allowed_extensions.json"
+def load_settings_from_server(settings_dict):
+    ckan = ckanapi.RemoteCKAN(settings_dict['url'],
+                              apikey=settings_dict['api_key'],
+                              user_agent='ckan_admin_uploader')
 
     try:
-        response = json.loads(requests.get(url).text)
-        return response['allowed_extensions']
+        server_settings = ckan.action.get_conf()
+        server_settings = {"allowed_extensions": server_settings["ext"],
+                           "allowed_max_upload_size": server_settings["max_size"]
+                           }
+        return server_settings
     except Exception as e:
         print(e)
         pass
+
 
 def get_pending_datasets(settings_dict):
     ckan = ckanapi.RemoteCKAN(settings_dict['url'],
@@ -276,12 +283,17 @@ def get_pending_datasets(settings_dict):
                               user_agent='ckan_admin_uploader')
     try:
         all_resources = ckan.action.package_search(
-            include_private=True
-        )
-        click.echo('Following datasets are set to private')
-        for resource in all_resources["results"]:
-            if resource['private'] == True:
-                click.echo(f" {settings_dict['url']}dataset/{resource['name']}")
+            include_private=True,
+            rows=1000
+        )["results"]
+        click.echo('\nFollowing datasets are still set to private')
+        i=1
+        results = [['nr.', 'author', 'dataset']]
+        for resource in all_resources:
+            if resource['private']:
+                results.append([i, resource['author'], settings_dict['url']+"dataset/"+resource['name']])
+                i = i+1
+        print(tabulate(results))
     except Exception as e:
         print(e)
         pass
