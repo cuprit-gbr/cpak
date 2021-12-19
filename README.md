@@ -17,14 +17,13 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  delete-datasets         Batch delete datasets
-  set-settings            This command will create a settings file called...
-  show-allowed-extension  Show allowed extensions to upload
-  show-pending-datasets   Show all pending datasets (private)
-  show-settings           This command shows content of current...
-  show-version            Show the current script version
-  upload-package          This command will upload a dataset to cKAN.
-
+  delete-datasets        Batch delete datasets
+  set-settings           This command will create a settings file called...
+  show-local-settings    This command shows content of current...
+  show-pending-datasets  Show all pending datasets (private)
+  show-server-settings   Show allowed extensions to upload
+  show-version           Show the current script version
+  upload-package         This command will upload a package to cKAN.
 ```
 
 # Install binary (Linux only)
