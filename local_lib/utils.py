@@ -287,6 +287,7 @@ def get_pending_datasets(settings_dict):
         click.echo('\nFollowing datasets are still set to private')
         i=1
         results = [['nr.', 'author', 'dataset']]
+
         for resource in all_resources:
             if resource['private']:
                 results.append([i, resource['author'], settings_dict['url']+"dataset/"+resource['name']])
