@@ -3,6 +3,13 @@
 This python script (and binary) can be used to manage datasets with cKAN.
 It expects python3 and is tested on *nix systems.
 
+# Install binary (Linux only)
+```
+curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
+
+# check if it works
+cpak
+```
 
 # Usage
 
@@ -107,12 +114,4 @@ Options:
   --folder_path TEXT  The path to your data folder: Example "/tmp/my_dataset"
                       [required]
   --help              Show this message and exit.
-```
-
-# Install binary (Linux only)
-```
-curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
-
-# check if it works
-cpak
 ```
