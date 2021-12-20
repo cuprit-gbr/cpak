@@ -97,7 +97,7 @@ def review_needed():
 
 
 @cli.command()
-@click.option('--folder_path', help='your iDAI.open_data API Key', required=True)
+@click.option('--folder_path', help='The path to your data folder: Example "/tmp/my_dataset"', required=True)
 @check_if_project_folder_and_metadata_exist
 @check_if_settings_exists
 def upload_package(folder_path):
