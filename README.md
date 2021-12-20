@@ -3,7 +3,7 @@
 This python script (and binary) can be used to manage datasets with cKAN.
 It expects python3 and is tested on *nix systems.
 
-# Install binary (Linux only)
+# Install binary (*nix systems only)
 ```
 curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
 
