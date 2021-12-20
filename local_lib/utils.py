@@ -38,20 +38,19 @@ def get_correct_settings_path():
     return settings_path
 
 
-def create_settings(api_key, url, owner_org, max_filesize, username, overwrite):
+def create_settings(api_key, url, owner_org, username, overwrite):
     settings_path = get_correct_settings_path()
     # instantiate
     config = ConfigParser()
     file_exists = path.isfile(settings_path)
     if file_exists and overwrite is False:
-        print("settings file already exists. please delete it first or set --overwrite=True")
+        print("settings file already exists. please delete it first or set --overwrite")
         exit()
     # add a new section and some values
     config.add_section('defaults')
     config.set('defaults', 'url', url)
     config.set('defaults', 'api_key', api_key)
     config.set('defaults', 'username', username)
-    config.set('defaults', 'max_filesize', max_filesize)
     config.set('defaults', 'owner_org', owner_org)
     with open(settings_path, 'w') as configfile:
         config.write(configfile)

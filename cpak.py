@@ -8,7 +8,7 @@ from local_lib.custom_validator import URL
 from local_lib.decorators import check_if_project_folder_and_metadata_exist, \
     check_if_settings_exists
 import os
-from local_lib.helpers import download_archive
+from local_lib.helpers import download_archive, extract_archive
 from version import version
 
 # global settings
@@ -35,54 +35,42 @@ def cli():
               required=False,
               default='dai-external',
               type=str)
-@click.option('--max-filesize',
-              help='Max file size of a file to upload',
-              required=False,
-              default=20,
-              type=str)
 @click.option('--username',
               help='Your Username, will be written to package.json',
               required=True,
               type=str)
 @click.option('--overwrite',
-              help='overwrite settings?',
-              required=False,
-              default=False,
-              type=bool)
-def set_settings(api_key, url, owner_org, max_filesize, username, overwrite):
-    """This command will create a settings file called 'settings.ini'.
-    The settings file contains default settings like upload limits next to your api key."""
-    create_settings(api_key, url, owner_org, max_filesize, username, overwrite)
+              is_flag=True)
+def set_settings(api_key, url, owner_org, username, overwrite):
+    """Create file 'settings.ini' """
+    create_settings(api_key, url, owner_org, username, overwrite)
 
 
 @cli.command()
 @check_if_settings_exists
-def show_local_settings():
-    """This command shows content of current 'settings.ini'."""
+def show_settings():
+    """Show settings and version."""
+    click.echo(f"\nScript Version: {version}\n---".upper())
+
     settings_path = get_correct_settings_path()
-    click.echo(f"Local settings path: {settings_path}")
-    click.echo(f"Local settings:\n---")
+    click.echo(f"Local settings path: ".upper()+f"{settings_path}\n")
     try:
         with open(settings_path, 'r') as f:
             print(f.read())
     except:
         pass
 
-    click.echo(f"Script name: {os.path.basename(__file__)}")
-    click.echo(f"Version: {version}")
 
-
-@cli.command()
-def show_version():
-    """Show the current script version"""
-    click.echo(os.path.basename(__file__))
-    click.echo(version)
+    server_config = load_settings_from_server(settings_dict)
+    click.echo(f"---\nServer settings:".upper())
+    click.echo(f"Max upload-size: {server_config['allowed_max_upload_size']} MB")
+    click.echo(f"Allowed extensions: {server_config['allowed_extensions']}\n")
 
 
 @cli.command()
 @click.option('--slug', '-s', help='Slugs of datasets each as -s', required=True, multiple=True)
 def delete_datasets(slug):
-    """Batch delete datasets"""
+    """Batch delete datasets by slug."""
     click.echo(f"Following datasets will be deleted {slug}")
     click.confirm("Are you sure?")
     delete_package(slug, settings_dict)
@@ -90,24 +78,21 @@ def delete_datasets(slug):
 
 @cli.command()
 @click.option('--url', '-u', help='Resource URL (only zip or tar.gz) i.e. "https://example.com/data.zip"', required=True)
-@click.option('--out', '-o', help='Local directory to exctract file to i.e. extract', required=True)
-def fetch__extract_archive(url, out):
+@click.option('--out', '-o', help='Local directory to extract file to i.e. /tmp', required=True)
+@click.option('--no-unpack', help="If set archive will not be unpacked", is_flag=True)
+def fetch_archive(url, out, no_unpack):
     """Fetch zip or tar resource and unpack it. You can then use the extracted dir as input for
      upload-package command """
-    download_archive(url, out)
+    click.echo(f"Fetching: {url}")
+    d_file = download_archive(url, out)
+    if not no_unpack:
+        click.echo(f"Extracting zip: {d_file} to {out}")
+        extract_archive(d_file, out)
 
 
 @cli.command()
-def show_server_settings():
-    """Show allowed extensions to upload"""
-    server_config = load_settings_from_server(settings_dict)
-    click.echo(f"Max upload-size: {server_config['allowed_max_upload_size']}")
-    click.echo(f"Allowed extensions: {server_config['allowed_extensions']}")
-
-
-@cli.command()
-def show_pending_datasets():
-    """Show all pending datasets (private)"""
+def review_needed():
+    """Show all pending datasets."""
     get_pending_datasets(settings_dict)
 
 
@@ -116,7 +101,7 @@ def show_pending_datasets():
 @check_if_project_folder_and_metadata_exist
 @check_if_settings_exists
 def upload_package(folder_path):
-    """This command will upload a package to cKAN. It needs a folder path as input.
+    """Upload a package to cKAN. It needs a folder path as input.
     The folder must contain a pdf called metadata.pdf. The Form data is used to create a new packge"""
 
     metadata_file_path = os.path.join(folder_path, 'metadata.pdf')

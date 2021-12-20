@@ -84,20 +84,27 @@ def iter_files(file_list, server_settings):
     separated_filelist['files_with_duplicate_names'] = check_filenames_for_duplicates(file_list)
     return separated_filelist
 
-def download_archive(url, out):
-    current_path = os.getcwd()
-    out_path = current_path+"/"+out
 
-    click.echo(f"Fetching: {url}")
-    d_file = wget.download(url)
+def download_archive(url, out):
+    try:
+        d_file = wget.download(url, out)
+        return d_file
+    except Exception as e:
+        return e
+
+
+def extract_archive(d_file, out):
+    os.path.join(out, d_file)
 
     if zipfile.is_zipfile(d_file):
-        click.echo(f"Extracting zip: {d_file} to out_path")
         with zipfile.ZipFile(d_file, 'r') as zip_ref:
-            zip_ref.extractall(out_path)
+            zip_ref.extractall(out)
+        return out
 
     if tarfile.is_tarfile(d_file):
-        click.echo(f"Extracting tar: {d_file} to out_path")
         tar_archive = tarfile.open(d_file)
-        tar_archive.extractall(out_path)
+        tar_archive.extractall(out)
         tar_archive.close()
+        return out
+
+    return None
