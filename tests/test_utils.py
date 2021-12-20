@@ -24,9 +24,6 @@ def test_generate_secure_name():
     assert filename == "o.txt"
 
 
-
-
-
 """
 def test_json_matcher(httpserver: HTTPServer):
     httpserver.expect_request("/foo", json={"foo": "bar"}).respond_with_data("Hello world!")

@@ -25,7 +25,7 @@ def check_if_settings_exists(f):
         settings_path = get_correct_settings_path()
         file_exists = os.path.isfile(settings_path)
         if not file_exists:
-            click.echo("settings.ini does not exist")
+            click.echo("settings.ini not found. Create it with cpak set-settings --help")
             quit()
         return ctx.invoke(f, *args, **kwargs)
 

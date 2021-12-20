@@ -21,8 +21,8 @@ except:
 @click.group()
 def cli():
     """This script creates a cKAN dataset based on a metadata PDF and uploads all valid files
-    in a folder and subfolders.
-    Note run [command]--help on commands to get more information.
+    of a folder (subfolders included).
+    Note: run [command] --help on commands to get more information.
     Example: cpak set-settings --help
     """
     pass
