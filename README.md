@@ -31,9 +31,6 @@ Commands:
 
 ### cpak delete-datasets --help
 ```
-
-
-
 Usage: cpak.py delete-datasets [OPTIONS]
 
   Batch delete datasets by slug.
