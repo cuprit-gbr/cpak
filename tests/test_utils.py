@@ -12,6 +12,7 @@ import os
 # Run with:
 # python3 -m pytest -q test*.py
 # python3 -m pytest  -q test_utils.py::test_download_file
+# pytest --exitfirst --verbose --failed-first
 
 @pytest.fixture(scope="session")
 def get_tmp_dir(tmp_path_factory):
