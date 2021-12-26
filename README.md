@@ -1,4 +1,4 @@
-![tests](https://github.com/cuprit-gbr/cpak/actions/workflows/tests.yaml/badge.svg)
+![tests](https://github.com/cuprit-gbr/cpak/actions/workflows/tests.yaml/badge.svg?)
 
 
 # cPAK
