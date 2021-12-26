@@ -28,4 +28,4 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --exitfirst --verbose --failed-first
+        coverage run --source=local_lib -m pytest -v tests && coverage report -m
