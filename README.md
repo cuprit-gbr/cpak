@@ -1,3 +1,6 @@
+![tests](https://github.com/cuprit-gbr/cpak/actions/workflows/tests.yaml/badge.svg)
+
+
 # cPAK
 
 This python script (and binary) can be used to manage datasets with cKAN.
