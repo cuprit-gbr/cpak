@@ -22,7 +22,7 @@ def get_tmp_dir(tmp_path_factory):
 
 def test_generate_secure_name():
     filename = generate_secure_name("ö.txt")
-    assert filename == "o.txt"
+    assert filename == "oX.txt"
 
 
 """
