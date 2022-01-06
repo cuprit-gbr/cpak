@@ -147,7 +147,7 @@ def create_package_with_metadata_values(pdf_form_data, settings_dict):
 
     final_payload = {**resource_dict, **pdf_form_data_simplified}
     final_payload['license_id'] = get_lisence_key(pdf_form_data_simplified['license_title'])
-    final_payload['publisher'] = f"{pdf_form_data_simplified['firstname']}, " \
+    final_payload['publisher'] = f"{pdf_form_data_simplified['firstname']} " \
                                  f"{pdf_form_data_simplified['lastname']}"
 
     try:
@@ -172,7 +172,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
                               user_agent='ckan_admin_uploader')
 
     #  create logfile
-    log_file_name = os.path.join(folder_path, 'package.json')
+    log_file_name = os.path.join(folder_path, 'package-upload-log.json')
     open(log_file_name, "w")
 
     # create list of files
@@ -180,7 +180,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
     separated_filelist = iter_files(all_files, server_settings)
 
     #  start logfile content
-    log_file_name = os.path.join(folder_path, 'package.json')
+    log_file_name = os.path.join(folder_path, 'package-upload-log.json')
     open(log_file_name, "w")
 
     log_content = {}
@@ -242,7 +242,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
             click.echo(failed)
 
     click.echo(f"\n=== \nJob done ...")
-    click.echo(f"You can view the dataset {settings_dict['url']}dataset/{new_package_name}")
+    click.echo(f"You can view the dataset {settings_dict['url']}/dataset/{new_package_name}")
 
 
 def delete_package(slug, settings_dict):

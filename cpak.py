@@ -36,7 +36,7 @@ def cli():
               default='dai-external',
               type=str)
 @click.option('--username',
-              help='Your Username, will be written to package.json',
+              help='Your Username, will be written to package-upload-log.json',
               required=True,
               type=str)
 @click.option('--overwrite',
@@ -110,7 +110,7 @@ def upload_package(folder_path):
     confirm_metadata(pdf_form_data)
     new_package_name = create_package_with_metadata_values(pdf_form_data, settings_dict)
 
-    click.echo(f"\n--- \nYour package {new_package_name} has been created?\n--- ")
+    click.echo(f"\n--- \nYour package {new_package_name} has been created\n--- ")
     server_settings = load_settings_from_server(settings_dict)
     upload_resources_to_package(folder_path,
                                 settings_dict,
