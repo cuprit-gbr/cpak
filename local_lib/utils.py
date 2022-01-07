@@ -252,7 +252,8 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
             click.echo(failed)
 
     click.echo(f"\n=== \nJob done ...")
-    click.echo(f"You can view the dataset {settings_dict['url']}/dataset/{new_package_name}")
+    url = settings_dict['url'].rstrip("/")
+    click.echo(f"You can view the dataset {url}/dataset/{new_package_name}")
 
 
 def delete_package(slug, settings_dict):
