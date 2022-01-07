@@ -1,1 +1,0 @@
-pytest --exitfirst --verbose --failed-first
