@@ -8,6 +8,7 @@ import wget
 import zipfile
 import tarfile
 import pathlib
+import copy
 
 def generate_secure_name(file_path):
     file, ext = os.path.splitext(file_path)
@@ -112,8 +113,9 @@ def extract_archive(d_file, out):
 def remove_user_path(folder_path, user_dict):
 
     if isinstance(user_dict, dict):
-        for file in user_dict.values():
+        user_dict_copy = copy.deepcopy(user_dict)
+        for file in user_dict_copy.values():
             root_folder = pathlib.PurePath(folder_path)
             clean_path = os.path.join(root_folder.name, file['filename'])
             file['path'] = clean_path
-        return user_dict
+        return user_dict_copy
