@@ -10,7 +10,8 @@ import pathlib
 from local_lib.helpers import path_to_dict, \
     write_logfile, \
     find_files_in_directory, \
-    iter_files
+    iter_files, \
+    remove_user_path
 from tabulate import tabulate
 
 
@@ -165,14 +166,14 @@ def read_settings_file_as_dict(filename):
     return settings_dict
 
 
-def upload_resources_to_package(folder_path, settings_dict, new_package_name, server_settings):
+def upload_resources_to_package(folder_path, settings_dict, new_package_name, server_settings, logfile):
     # api obj
     ckan = ckanapi.RemoteCKAN(settings_dict['url'],
                               apikey=settings_dict['api_key'],
                               user_agent='ckan_admin_uploader')
 
     #  create logfile
-    log_file_name = os.path.join(folder_path, 'package-upload-log.json')
+    log_file_name = os.path.join(folder_path, logfile)
     open(log_file_name, "w")
 
     # create list of files
@@ -180,7 +181,7 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
     separated_filelist = iter_files(all_files, server_settings)
 
     #  start logfile content
-    log_file_name = os.path.join(folder_path, 'package-upload-log.json')
+    log_file_name = os.path.join(folder_path, logfile)
     open(log_file_name, "w")
 
     log_content = {}
@@ -192,24 +193,33 @@ def upload_resources_to_package(folder_path, settings_dict, new_package_name, se
     if separated_filelist['files_exceed_size']:
         click.echo("\n--- \nNO UPLOAD: Following files exceed the allowed settings limit:\n")
         pprint.pprint(separated_filelist['files_exceed_size'])
-        log_content['files_exceed_size'] = separated_filelist['files_exceed_size']
+        log_content['files_exceed_size'] = remove_user_path(
+            folder_path, separated_filelist['files_exceed_size']
+        )
 
     if separated_filelist['files_missing_or_wrong_extension']:
         click.echo("\n--- \nNO UPLOAD: Following filenames are "
                    "not allowed by extension or have no extension:\n")
         pprint.pprint(separated_filelist['files_missing_or_wrong_extension'])
-        log_content['files_missing_or_wrong_extension'] = separated_filelist['files_missing_or_wrong_extension']
+        log_content['files_missing_or_wrong_extension'] = remove_user_path(
+            folder_path, separated_filelist['files_missing_or_wrong_extension']
+        )
 
     if separated_filelist['files_with_duplicate_names']:
         click.echo("\n--- \nWARNING: Following files have duplicate names but might be uploaded if"
                    " extension and filesize are fine:\n")
         pprint.pprint(separated_filelist['files_with_duplicate_names'])
-        log_content['files_with_duplicate_names'] = separated_filelist['files_with_duplicate_names']
+        log_content['files_with_duplicate_names'] = remove_user_path(
+            folder_path, separated_filelist['files_with_duplicate_names']
+        )
 
     if separated_filelist['files_to_upload']:
         click.echo("\n--- \nUPLOAD: Following files look fine and will be uploaded:\n")
         pprint.pprint(separated_filelist['files_to_upload'])
-        log_content['files_to_upload'] = separated_filelist['files_to_upload']
+        log_content['files_to_upload'] = remove_user_path(
+            folder_path, separated_filelist['files_to_upload']
+        )
+
 
     # write logfile
     write_logfile(log_content, log_file_name)

@@ -115,7 +115,8 @@ def upload_package(folder_path):
     upload_resources_to_package(folder_path,
                                 settings_dict,
                                 new_package_name,
-                                server_settings)  # iter files, validate extension and filesize
+                                server_settings,
+                                'package-upload-log.json')  # iter files, validate extension and filesize
 
 
 if __name__ == '__main__':

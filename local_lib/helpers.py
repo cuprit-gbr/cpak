@@ -7,7 +7,7 @@ from collections import Counter
 import wget
 import zipfile
 import tarfile
-import click
+import pathlib
 
 def generate_secure_name(file_path):
     file, ext = os.path.splitext(file_path)
@@ -108,3 +108,12 @@ def extract_archive(d_file, out):
         return out
 
     return None
+
+def remove_user_path(folder_path, user_dict):
+
+    if isinstance(user_dict, dict):
+        for file in user_dict.values():
+            root_folder = pathlib.PurePath(folder_path)
+            clean_path = os.path.join(root_folder.name, file['filename'])
+            file['path'] = clean_path
+        return user_dict

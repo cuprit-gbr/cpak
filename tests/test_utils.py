@@ -3,8 +3,6 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from local_lib.helpers import *
-from pytest_httpserver import HTTPServer
-import requests
 import pytest
 from pathlib import Path
 import os
@@ -75,3 +73,23 @@ def test_check_filenames_for_duplicates(get_tmp_dir):
 def test_path_to_dict(get_tmp_dir):
     return_dict = path_to_dict(str(get_tmp_dir) + "/sample")
     assert "children" in return_dict
+
+def test_remove_user_path():
+    dict = {
+        0: {
+            'path': '/Users/private_name/data/metadata Kopie.pdf',
+            'filename': 'metadata Kopie.pdf'
+            },
+        1: {
+            'path': '/Users/private_name/data/a.zip',
+            'filename': 'a.zip'
+            }
+    }
+
+    cleaned_dict = remove_user_path("/Users/private_name/data/", dict)
+    path_cleaned = []
+    for item in cleaned_dict.values():
+        path_cleaned.append("private_name" in item["path"])
+    assert all(path_cleaned) == 0
+
+

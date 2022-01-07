@@ -9,7 +9,7 @@ app:
 	python3 -m zipapp -c cpak -p '/usr/bin/env python3'; \
 	chmod +x cpak.pyz; \
     rm -rf cpak; \
-    mkdir build
+    mkdir -p build
 	mv cpak.pyz build/cpak;
 
 	#python3 ./app/cpak.py
