@@ -68,22 +68,25 @@ def read_metatadata_from_pdf(metadata_file_path):
 
 def confirm_metadata(pdf_form_data):
     click.echo("The used metadata is:")
-    title = "None"
+
     metadata = []
+    metadata_missing = []
+    allowed_empty = ['orcid_id','ror_id']
     for field in pdf_form_data.values():
-        if field['/T'] == "title" and '/V' not in field:
-            title = False
         if '/V' not in field:
-            metadata.append([field['/T'], "-", "NOT OK"])
-            if field['/T'] == "title":
-                title = False
+            if field['/T'] in allowed_empty:
+                metadata.append([field['/T'], "-", "EMPTY IGNORED"])
+            else:
+                metadata.append([field['/T'], "-", "NOT OK"])
+                metadata_missing.append(True)
         else:
             metadata.append([field['/T'], field['/V'], "OK"])
+            metadata_missing.append(False)
 
     print(tabulate(metadata))
 
-    if not title:
-        click.echo("ERROR: The title is empty this package cannot be created!")
+    if True in metadata_missing:
+        click.echo("ERROR: All fields are required! Please fix metadata.pdf and retry")
         quit()
 
     click.confirm('\nIs the data correct?', abort=True)
