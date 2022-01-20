@@ -51,10 +51,23 @@ def test_extract_archive(get_tmp_dir):
     assert os.path.isdir(d_dir)
 
 
+def test_write_logfile(get_tmp_dir):
+    logfile = str(get_tmp_dir)+"/log.json"
+    content = "Hello"
+    write_logfile(content, logfile)
+    assert os.path.isfile(logfile)
+
+    with open(logfile) as f:
+        lines = f.read().rstrip().replace('"', '')
+        print(lines)
+    assert lines == "Hello"
+
+
 def test_find_files_in_directory(get_tmp_dir):
     file_structure = find_files_in_directory(str(get_tmp_dir)+"/sample")
     print(file_structure)
     assert len(file_structure) > 0, "Length of file structure is 0"
+
 
 def test_iter_files(get_tmp_dir):
     file_list = find_files_in_directory(str(get_tmp_dir)+"/sample")
@@ -63,6 +76,7 @@ def test_iter_files(get_tmp_dir):
     files = iter_files(file_list, server_settings)
     print(files)
     assert "filename" in files["files_to_upload"][0]
+
 
 def test_check_filenames_for_duplicates(get_tmp_dir):
     file_list = find_files_in_directory(str(get_tmp_dir)+"/sample")
@@ -73,6 +87,7 @@ def test_check_filenames_for_duplicates(get_tmp_dir):
 def test_path_to_dict(get_tmp_dir):
     return_dict = path_to_dict(str(get_tmp_dir) + "/sample")
     assert "children" in return_dict
+
 
 def test_remove_user_path():
     dict = {

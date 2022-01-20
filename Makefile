@@ -26,4 +26,8 @@ build:
 	python3 ./build/cpak
 
 test:
-	python3 -m pytest --exitfirst --verbose --failed-first
+	python3 -m pytest --exitfirst --verbose  --failed-first
+
+coverage:
+	coverage run --source local_lib -m pytest
+	coverage report -m

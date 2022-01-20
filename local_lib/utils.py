@@ -1,7 +1,7 @@
 from datetime import datetime
 from os import path
 import click
-from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfFileReader, generic
 import os
 import ckanapi
 from slugify import slugify
@@ -73,14 +73,18 @@ def confirm_metadata(pdf_form_data):
     metadata_missing = []
     allowed_empty = ['orcid_id','ror_id']
     for field in pdf_form_data.values():
-        if '/V' not in field:
+        if '/V' not in field or field['/V'] == "":
             if field['/T'] in allowed_empty:
                 metadata.append([field['/T'], "-", "EMPTY IGNORED"])
             else:
+
                 metadata.append([field['/T'], "-", "NOT OK"])
                 metadata_missing.append(True)
         else:
-            metadata.append([field['/T'], field['/V'], "OK"])
+            value = field['/V']
+            if isinstance(value, generic.ByteStringObject):
+                value = value.decode('ascii')
+            metadata.append([field['/T'], value, "OK"])
             metadata_missing.append(False)
 
     print(tabulate(metadata))
@@ -134,6 +138,9 @@ def get_lisence_key(lisence_name):
 def create_package_with_metadata_values(pdf_form_data, settings_dict):
     # create a simplified version of the raw pdf objects
     pdf_form_data_simplified = {k: v.get('/V', "") for (k, v) in pdf_form_data.items()}
+    if isinstance(pdf_form_data_simplified['notes'], generic.ByteStringObject):
+        pdf_form_data_simplified['notes'] = pdf_form_data_simplified['notes'].decode('ascii')
+
     unique_title = check_if_package_already_exists(slugify(pdf_form_data_simplified['title']), settings_dict)
     click.echo(f"{unique_title} is unique and will be used")
 
