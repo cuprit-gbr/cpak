@@ -31,3 +31,6 @@ test:
 coverage:
 	coverage run --source local_lib -m pytest
 	coverage report -m
+
+upload:
+	./cpak.py upload-package --folder_path=./data

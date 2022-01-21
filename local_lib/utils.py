@@ -28,14 +28,11 @@ def get_correct_settings_path():
 
     settings_file = 'settings.ini'
     if parent_folder == "cpak":
-        settings_path = os.path.abspath(
-            os.path.join(folder, '..', '..', '..', settings_file)
-        )
+        path_join = os.path.join(folder, '..', '..', '..', settings_file)
     else:
-        settings_path = os.path.abspath(
-            os.path.join(folder, '..', '..', settings_file)
-        )
+        path_join = os.path.join(folder, '..', '..', settings_file)
 
+    settings_path = os.path.abspath(path_join)
     return settings_path
 
 
@@ -77,7 +74,6 @@ def confirm_metadata(pdf_form_data):
             if field['/T'] in allowed_empty:
                 metadata.append([field['/T'], "-", "EMPTY IGNORED"])
             else:
-
                 metadata.append([field['/T'], "-", "NOT OK"])
                 metadata_missing.append(True)
         else:
@@ -137,6 +133,7 @@ def get_lisence_key(lisence_name):
 
 def create_package_with_metadata_values(pdf_form_data, settings_dict):
     # create a simplified version of the raw pdf objects
+    # TODO: move read of form data into function and use it in confirm of confirm_metadata()
     pdf_form_data_simplified = {k: v.get('/V', "") for (k, v) in pdf_form_data.items()}
     if isinstance(pdf_form_data_simplified['notes'], generic.ByteStringObject):
         pdf_form_data_simplified['notes'] = pdf_form_data_simplified['notes'].decode('ascii')
