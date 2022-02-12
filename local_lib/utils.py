@@ -135,8 +135,11 @@ def create_package_with_metadata_values(pdf_form_data, settings_dict):
     # create a simplified version of the raw pdf objects
     # TODO: move read of form data into function and use it in confirm of confirm_metadata()
     pdf_form_data_simplified = {k: v.get('/V', "") for (k, v) in pdf_form_data.items()}
-    if isinstance(pdf_form_data_simplified['notes'], generic.ByteStringObject):
-        pdf_form_data_simplified['notes'] = pdf_form_data_simplified['notes'].decode('ascii')
+
+    byte_objects = ['notes', 'related_resources']
+    for obj in byte_objects:
+        if isinstance(pdf_form_data_simplified[obj], generic.ByteStringObject):
+            pdf_form_data_simplified[obj] = pdf_form_data_simplified[obj].decode('ascii')
 
     unique_title = check_if_package_already_exists(slugify(pdf_form_data_simplified['title']), settings_dict)
     click.echo(f"{unique_title} is unique and will be used")
