@@ -68,7 +68,7 @@ def confirm_metadata(pdf_form_data):
 
     metadata = []
     metadata_missing = []
-    allowed_empty = ['orcid_id','ror_id']
+    allowed_empty = ['orcid_id', 'ror_id', 'doi', 'contributor_orcid_id', 'contributor']
     for field in pdf_form_data.values():
         if '/V' not in field or field['/V'] == "":
             if field['/T'] in allowed_empty:
