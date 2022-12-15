@@ -9,14 +9,16 @@ build:
 	cp -r requirements.txt local_lib *.py cpak/; \
 	cd cpak; \
 	pip3 install -t . -r requirements.txt; \
+	pip3 install --upgrade setuptools; \
+	pip3 install --upgrade pip; \
 	rm -rf ./__pycache__ ./*.dist-info ./_distutils_hack ./setuptools; \
 	cd ..; \
 
 	# package
 	mv cpak/cpak.py cpak/__main__.py; \
+	echo "__version__ = 'ckanapi-4.7'" > cpak/ckanapi/version.py; \
 	python3 -m zipapp -c cpak -p '/usr/bin/env python3'; \
 	chmod +x cpak.pyz; \
-    rm -rf cpak; \
 
     # clean up
 	rm -rf cpak; \
