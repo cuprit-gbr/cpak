@@ -3,8 +3,8 @@
 
 # cPAK
 
-This python script (and binary) can be used to manage datasets with cKAN.
-It expects python3 and is tested on *nix systems.
+This python script (and binary) can be used to upload/create datasets with cKAN.
+The scripts expects a folder with files as input that get uploaded. 
 
 > The script is meant for admins only!
 
