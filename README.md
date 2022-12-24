@@ -53,9 +53,9 @@ cpak set-settings --url=https://repo.dainst.org --username=toni --api-key=<your_
 
 # Usage
 
-## Commands
+## Available Commands
 ```
-Usage: python -m cpak [OPTIONS] COMMAND [ARGS]...
+Usage: cpak [OPTIONS] COMMAND [ARGS]...
 
   This script creates a cKAN dataset based on a metadata PDF and uploads all
   valid files of a folder (subfolders included). Note: run [command] --help on
@@ -75,6 +75,29 @@ Commands:
 ```
 
 ## Command details
+
+### cpak upload-package --help
+
+> Most likely the most important command.
+
+```
+Usage: cpak.py upload-package [OPTIONS]
+
+  Upload a package to cKAN. It needs a folder path as input. The folder must
+  contain a pdf called metadata.pdf. The Form data is used to create a new
+  packge
+
+Options:
+  --folder_path TEXT  The path to your data folder: Example "/tmp/my_dataset"
+                      [required]
+  --help              Show this message and exit.
+```
+
+example Usage:
+
+```
+cpak.py upload-package --folder_path="/tmp/my_dataset"
+
 
 ### cpak delete-datasets --help
 ```
@@ -141,17 +164,5 @@ Options:
   --help  Show this message and exit.
 ```
 
-### cpak upload-package --help
 
-```
-Usage: cpak.py upload-package [OPTIONS]
 
-  Upload a package to cKAN. It needs a folder path as input. The folder must
-  contain a pdf called metadata.pdf. The Form data is used to create a new
-  packge
-
-Options:
-  --folder_path TEXT  The path to your data folder: Example "/tmp/my_dataset"
-                      [required]
-  --help              Show this message and exit.
-```
