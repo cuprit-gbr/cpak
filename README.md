@@ -93,11 +93,11 @@ Options:
   --help              Show this message and exit.
 ```
 
-example Usage:
+Example Usage:
 
 ```
 cpak.py upload-package --folder_path="/tmp/my_dataset"
-
+```
 
 ### cpak delete-datasets --help
 ```
