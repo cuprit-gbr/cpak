@@ -6,6 +6,8 @@
 This python script (and binary) can be used to manage datasets with cKAN.
 It expects python3 and is tested on *nix systems.
 
+> The script is meant for admins only!
+
 # Install binary (*nix systems only)
 ```
 curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
@@ -13,6 +15,10 @@ curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bas
 # check if it works
 cpak
 ```
+
+# Install binary on Windows:
+
+See: https://github.com/cuprit-gbr/cpak/wiki/cpak-on-Windows
 
 # Usage
 
