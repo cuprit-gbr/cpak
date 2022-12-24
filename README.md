@@ -1,12 +1,25 @@
 ![tests](https://github.com/cuprit-gbr/cpak/actions/workflows/tests.yaml/badge.svg?)
 
 
-# cPAK
+# What is cPAK?
 
-This python script (and binary) can be used to upload/create datasets with cKAN.
-The scripts expects a folder with files as input that get uploaded. 
+cPAK is a management script **for admins** on repo.dainst.org.
 
-> The script is meant for admins only!
+At repo.dainst.org employees are allowed to upload datasets which get automaticully assigned
+to group `dai-internal`. After creation of a dataset by some user, the dataset needs to checked
+and published by an admin.
+
+In case some external person likes to publish datasets an admin has to upload
+the files on behalf of a user.
+
+This script can be used to read and upload all files within a folder.
+The admin is responsible for checking all files and the correctness of the required.
+metadata.pdf.
+
+The created dataset will be assigned to group `dai-external`
+
+Continue by installing the binary. See next section.
+
 
 # Installation
 ## Linux
