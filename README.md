@@ -6,7 +6,7 @@
 cPAK is a management script **for admins** on repo.dainst.org.
 
 At repo.dainst.org employees are allowed to upload datasets which get automaticully assigned
-to group `dai-internal`. After creation of a dataset by some user, the dataset needs to checked
+to group `dai-internal`. After creation of a dataset by some user, the dataset needs to be checked
 and published by an admin.
 
 In case some external person likes to publish datasets an admin has to upload
