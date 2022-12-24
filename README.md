@@ -8,7 +8,8 @@ The scripts expects a folder with files as input that get uploaded.
 
 > The script is meant for admins only!
 
-# Install binary (*nix systems only)
+# Installation
+## Linux
 ```
 curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bash
 
@@ -16,9 +17,39 @@ curl -o- https://raw.githubusercontent.com/cuprit-gbr/cpak/main/install.sh | bas
 cpak
 ```
 
-# Install binary on Windows:
+## Windows
 
 See: https://github.com/cuprit-gbr/cpak/wiki/cpak-on-Windows
+
+# Setup
+
+After installing it's needed to create a local settings file.
+Use the following command for explanations.
+
+```
+cpak set-settings --help
+Usage: cpak set-settings [OPTIONS]
+
+  Create file 'settings.ini'
+
+Options:
+  --api-key TEXT    your iDAI.open_data API Key  [required]
+  --url URL         your iDAI.open_data url  [required]
+  --owner-org TEXT  The owner organisation. (default: dai-external)
+  --username TEXT   Your Username, will be written to package-upload-log.json
+                    [required]
+  --overwrite
+  --help            Show this message and exit.
+```
+
+Example command to create your settings:
+
+```
+cpak set-settings --url=https://repo.dainst.org --username=toni --api-key=<your_api_key>
+```
+
+> Get <your_api_key> from the repo.dainst.org GUI.
+
 
 # Usage
 
